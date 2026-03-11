@@ -1,6 +1,6 @@
 {
   "name": "@arrivd/hooks",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Outgoing webhook delivery with retry, signing, and dead letter queue",
   "type": "module",
   "sideEffects": false,
