@@ -53,6 +53,5 @@
     "url": "https://github.com/arrivd-dev/arrivd.git",
     "directory": "packages/cron"
   },
-  "homepage": "https://arrivd.dev",
   "bugs": "https://github.com/arrivd-dev/arrivd/issues"
 }
