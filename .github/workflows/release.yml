@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g. 0.1.0)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2.0'
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun run test
+
+      - name: Prepare packages for publish
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "Invalid version format: $VERSION" && exit 1
+          fi
+          for f in packages/core/package.json packages/email/package.json packages/hooks/package.json packages/cron/package.json; do
+            PKG_FILE="$f" node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync(process.env.PKG_FILE, 'utf8'));
+              pkg.version = process.env.VERSION;
+              if (pkg.devDependencies?.['@arrivd/typescript-config']) {
+                delete pkg.devDependencies['@arrivd/typescript-config'];
+              }
+              if (pkg.dependencies?.['@arrivd/core'] === 'workspace:*') {
+                pkg.dependencies['@arrivd/core'] = '^' + process.env.VERSION;
+              }
+              fs.writeFileSync(process.env.PKG_FILE, JSON.stringify(pkg, null, 2) + '\n');
+            "
+          done
+
+      # Publish in dependency order
+      - name: Publish @arrivd/core
+        run: cd packages/core && npm publish --access public || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @arrivd/email
+        run: cd packages/email && npm publish --access public || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @arrivd/hooks
+        run: cd packages/hooks && npm publish --access public || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @arrivd/cron
+        run: cd packages/cron && npm publish --access public || true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit and tag
+        env:
+          HUSKY: '0'
+          VERSION: ${{ inputs.version }}
+        run: |
+          git checkout -- packages/*/package.json
+          for f in packages/core/package.json packages/email/package.json packages/hooks/package.json packages/cron/package.json; do
+            PKG_FILE="$f" node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync(process.env.PKG_FILE, 'utf8'));
+              pkg.version = process.env.VERSION;
+              fs.writeFileSync(process.env.PKG_FILE, JSON.stringify(pkg, null, 2) + '\n');
+            "
+          done
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -A
+          git diff --cached --quiet && echo "No changes to commit" || {
+            git commit -m "chore: release v${VERSION}"
+            git tag "v${VERSION}"
+            git push && git push --tags
+          }

@@ -1,0 +1,32 @@
+{
+  "name": "arrivd",
+  "private": true,
+  "description": "Deliverability infrastructure for developers",
+  "packageManager": "bun@1.2.0",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter @arrivd/core build && bun run --filter './packages/*' build",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter './packages/*' test",
+    "clean": "rm -rf packages/*/dist apps/*/dist node_modules packages/*/node_modules apps/*/node_modules",
+    "publish:all": "bun run build && cd packages/core && bun publish --access public && cd ../email && bun publish --access public && cd ../hooks && bun publish --access public && cd ../cron && bun publish --access public",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "typescript": "^5.8.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,css}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  }
+}
