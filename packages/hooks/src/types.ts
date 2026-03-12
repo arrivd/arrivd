@@ -52,6 +52,7 @@ export interface DlqEntry {
   id: string
   subscriberId: string
   endpoint: string
+  secret: string
   event: WebhookEvent
   error: string
   failedAt: number
