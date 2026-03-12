@@ -23,6 +23,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 // ── Sender ──
+// TODO: wire up QueueAdapter so the sender uses enqueue/dequeue instead of inline retry
 
 export function createWebhookSender(config: WebhookSenderConfig = {}): WebhookSender {
   const maxAttempts = config.retry?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS

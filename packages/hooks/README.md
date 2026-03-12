@@ -100,13 +100,13 @@ const headers = await buildSignatureHeaders(body, secret)
 
 ### Retry
 
-- Exponential backoff with jitter (1s, 4s, 16s, 64s, 256s)
+- Exponential backoff with multiplicative jitter (1s, 2s, 4s, 8s, 16s base × 0.5–1.5)
 - Configurable max retry attempts (default: 5)
 - 10s fetch timeout with `AbortSignal`
 
 ### Dead Letter Queue
 
-- Failed deliveries moved to DLQ after max retries
+- Failed deliveries moved to DLQ after max retries (max 1000 entries, FIFO eviction)
 - Retry re-enters the full retry cycle
 - List, retry, and purge operations
 - `onFailure` callback for alerting

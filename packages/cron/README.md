@@ -2,66 +2,96 @@
 
 Cron job monitoring with dead man's switch and timeout detection.
 
-> **Coming Soon** — This package is planned for Phase 3. Follow the [GitHub repo](https://github.com/arrivd-dev/arrivd) for updates.
-
 ## Install
 
 ```bash
 npm install @arrivd/cron
 ```
 
-## Planned API
+## Quick Start
 
 ```typescript
 import { monitor } from '@arrivd/cron'
 
-await monitor('daily-report', async () => {
-  // job logic
+const job = monitor('daily-report', async () => {
   await generateReport()
   await sendEmails()
 }, {
-  schedule: '0 9 * * *',      // expected schedule
-  timeout: '30m',              // max duration
-  alertOnMiss: true,           // alert if job doesn't run
+  schedule: '0 9 * * *',
+  timeout: '30m',
+  gracePeriod: '5m',
+  onCheckIn: (name) => console.log(`${name} checked in`),
 })
+
+// Run it — errors re-throw after reporting
+await job()
+
+// Inspect history
+console.log(job.lastRun)  // { status: 'success', duration: 12340, ... }
+console.log(job.history)  // all runs
 ```
 
-## Planned Features
+## Dead Man's Switch
+
+Use `createScheduler()` to monitor whether jobs check in on time:
+
+```typescript
+import { createScheduler } from '@arrivd/cron'
+
+const scheduler = createScheduler({
+  jobs: [
+    { name: 'daily-report', schedule: '0 9 * * *', gracePeriod: '5m' },
+    { name: 'nightly-sync', schedule: '0 2 * * *' },
+  ],
+  checkIntervalMs: 60_000,
+  onMiss: (name, expectedAt, now) => {
+    console.error(`${name} missed — expected at ${expectedAt}`)
+  },
+})
+
+scheduler.start()
+
+// Call this from your job when it runs successfully
+scheduler.checkIn('daily-report')
+```
+
+## Features
 
 ### Job Wrapper
 
-- `monitor(name, fn, options)` — wrap any async function
-- Auto-report start, end, fail, and duration
-- Capture error details on failure
+- `monitor(name, fn, options)` — wraps any async function with auto-reporting
+- Reports start, success, failure, and duration
+- Captures error details on failure, re-throws transparently
+- Run history accessible via `job.history` and `job.lastRun`
 
 ### Dead Man's Switch
 
-- Declare expected schedule (cron expression)
-- Alert if job doesn't check in within expected window
-- Configurable grace period
+- Declare expected schedule via cron expression
+- Alert if job doesn't check in within the expected window
+- Configurable grace period (e.g. `'5m'`, `'1h'`)
+- Per-window deduplication — only alerts once per missed window
 
 ### Timeout Detection
 
-- Set max expected duration
-- Alert if job exceeds timeout
-- Optional kill support for long-running jobs
+- `timeout: '30m'` — fires alert if job exceeds expected duration
+- Job continues running (non-killing by default)
 
-### Framework Adapters
-
-- Vercel Cron handler wrapper
-- Cloudflare Workers scheduled handler
-- Generic `node-cron` wrapper
-
-## Configuration
+### Cron Utilities
 
 ```typescript
-interface MonitorOptions {
-  name: string
-  schedule?: string      // cron expression
-  timeout?: string       // e.g. '30m', '1h'
-  alertOnMiss?: boolean  // default: true
-}
+import { nextRun, previousRun, parseDuration } from '@arrivd/cron'
+
+nextRun('0 9 * * *')              // next Date matching the expression
+previousRun('0 9 * * *')          // most recent Date that matched
+parseDuration('30m')              // 1_800_000 (ms)
 ```
+
+## Coming Soon
+
+- Kill support for long-running jobs (AbortController)
+- Vercel Cron adapter
+- Cloudflare Workers scheduled handler adapter
+- Generic `node-cron` wrapper
 
 ## License
 

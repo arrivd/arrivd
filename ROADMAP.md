@@ -81,7 +81,7 @@
 - ✅ HMAC-SHA256 payload signing (`signPayload`) with standard `x-webhook-signature` header
 - ✅ `verifyPayload()` — timing-safe signature verification for incoming webhooks
 - ✅ `buildSignatureHeaders()` — signature + timestamp headers for replay attack prevention
-- ✅ Exponential backoff with jitter (base-2: 1s → 2s → 4s → 8s → 16s)
+- ✅ Exponential backoff with multiplicative jitter (base-2: 1s → 2s → 4s → 8s → 16s, ×0.5–1.5)
 - ✅ Configurable max retry attempts (default: 5)
 - ✅ 10s fetch timeout with `AbortSignal` on all outbound deliveries
 
@@ -92,7 +92,7 @@
 - BullMQ adapter (for teams already using BullMQ)
 
 ### Dead Letter Queue
-- ✅ Failed deliveries moved to DLQ after max retries exhausted
+- ✅ Failed deliveries moved to DLQ after max retries exhausted (max 1000 entries, FIFO eviction)
 - ✅ `sender.dlq.list()`, `sender.dlq.retry(id)`, `sender.dlq.purge()`
 - ✅ DLQ retry re-enters full retry cycle
 - ✅ `onFailure` callback for alerting
@@ -107,7 +107,7 @@
 - Per-subscriber delivery stats
 
 ### Test Coverage
-- ✅ 41 tests across 5 test files (signer: 9, backoff: 6, queue: 4, DLQ: 7, sender: 15)
+- ✅ 42 tests across 5 test files (signer: 9, backoff: 6, queue: 4, DLQ: 8, sender: 15)
 - ✅ Integration tests with real HTTP via `Bun.serve`
 
 ### Framework Middleware

@@ -73,4 +73,17 @@ describe('DeadLetterQueue', () => {
     dlq.add(makeEntry())
     expect(dlq.size()).toBe(1)
   })
+
+  test('evicts oldest entries when at capacity', () => {
+    const dlq = new DeadLetterQueue(3)
+    dlq.add(makeEntry('a'))
+    dlq.add(makeEntry('b'))
+    dlq.add(makeEntry('c'))
+    dlq.add(makeEntry('d'))
+
+    expect(dlq.size()).toBe(3)
+    expect(dlq.get('a')).toBeUndefined()
+    expect(dlq.get('b')).toBeDefined()
+    expect(dlq.get('d')).toBeDefined()
+  })
 })
