@@ -33,8 +33,8 @@ describe('MemoryQueue', () => {
     queue.enqueue(makeJob('a'))
     queue.enqueue(makeJob('b'))
 
-    expect(queue.dequeue()!.id).toBe('a')
-    expect(queue.dequeue()!.id).toBe('b')
+    expect(queue.dequeue()?.id).toBe('a')
+    expect(queue.dequeue()?.id).toBe('b')
   })
 
   test('size tracks queue length', () => {

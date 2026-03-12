@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test'
 import { calculateBackoff } from './backoff'
+import { describe, expect, test } from 'bun:test'
 
 describe('calculateBackoff', () => {
   test('attempt 0 returns ~1000ms', () => {
