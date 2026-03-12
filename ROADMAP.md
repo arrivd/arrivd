@@ -74,30 +74,41 @@
 - Resolver failure/timeout tests (distinguish "no records" from "DNS broken")
 - Integration tests against real domains (opt-in, not in CI)
 
-## v0.3 — @arrivd/hooks
+## v0.3 — @arrivd/hooks Core ✅
 
 ### Core Sender
-- `createWebhookSender()` factory with config for signing, retry, and DLQ
-- HMAC-SHA256 payload signing (standard `x-webhook-signature` header)
-- Exponential backoff with jitter (1s → 4s → 16s → 64s → 256s)
-- Configurable max retry attempts
+- ✅ `createWebhookSender()` factory with config for signing, retry, and DLQ
+- ✅ HMAC-SHA256 payload signing (`signPayload`) with standard `x-webhook-signature` header
+- ✅ `verifyPayload()` — timing-safe signature verification for incoming webhooks
+- ✅ `buildSignatureHeaders()` — signature + timestamp headers for replay attack prevention
+- ✅ Exponential backoff with jitter (base-2: 1s → 2s → 4s → 8s → 16s)
+- ✅ Configurable max retry attempts (default: 5)
+- ✅ 10s fetch timeout with `AbortSignal` on all outbound deliveries
 
 ### Queue Adapters
-- In-memory queue (default — zero infrastructure for getting started)
+- ✅ In-memory queue (default — zero infrastructure for getting started)
+- ✅ Queue adapter interface (`QueueAdapter`) for custom implementations
 - Redis adapter (recommended for production)
 - BullMQ adapter (for teams already using BullMQ)
-- Queue adapter interface for custom implementations
 
 ### Dead Letter Queue
-- Failed deliveries moved to DLQ after max retries exhausted
-- `sender.dlq.list()`, `sender.dlq.retry(id)`, `sender.dlq.purge()`
-- `onFailure` callback for alerting
+- ✅ Failed deliveries moved to DLQ after max retries exhausted
+- ✅ `sender.dlq.list()`, `sender.dlq.retry(id)`, `sender.dlq.purge()`
+- ✅ DLQ retry re-enters full retry cycle
+- ✅ `onFailure` callback for alerting
+- ✅ `onDelivery` callback for successful deliveries
 
 ### Subscriber Management
-- `sender.subscribe()` — register endpoint with event filter and secret
-- `sender.unsubscribe()` — remove endpoint
+- ✅ `sender.subscribe()` — register endpoint with event filter and per-subscriber secret
+- ✅ `sender.unsubscribe()` — remove endpoint
+- ✅ Event fan-out — `send()` delivers to all subscribers matching the event name
+- ✅ `sender.stats()` — subscriber count, delivered, failed, DLQ size
 - URL ownership verification (Stripe-style challenge/response)
 - Per-subscriber delivery stats
+
+### Test Coverage
+- ✅ 41 tests across 5 test files (signer: 9, backoff: 6, queue: 4, DLQ: 7, sender: 15)
+- ✅ Integration tests with real HTTP via `Bun.serve`
 
 ### Framework Middleware
 - Express router: `POST /subscribe`, `DELETE /:id`, `GET /:id/stats`, `POST /:id/retry`
