@@ -7,6 +7,7 @@ function makeEntry(id = 'dlq_1'): DlqEntry {
     id,
     subscriberId: 'sub_1',
     endpoint: 'https://example.com/hook',
+    secret: 'test-secret',
     event: { event: 'test', data: {} },
     error: 'Connection refused',
     failedAt: Date.now(),

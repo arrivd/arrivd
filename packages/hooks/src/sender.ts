@@ -1,11 +1,9 @@
 import { generateId } from '@arrivd/core'
 import { calculateBackoff } from './backoff'
 import { DeadLetterQueue } from './dlq'
-import { MemoryQueue } from './queue'
 import { buildSignatureHeaders } from './signer'
 import type {
   DlqEntry,
-  QueueAdapter,
   SenderStats,
   SubscribeOptions,
   Subscriber,
@@ -31,7 +29,6 @@ export function createWebhookSender(config: WebhookSenderConfig = {}): WebhookSe
   const timeout = config.timeout ?? DEFAULT_TIMEOUT
   const subscribers = new Map<string, Subscriber>()
   const dlq = new DeadLetterQueue()
-  const queue: QueueAdapter = config.queue ?? new MemoryQueue()
 
   let deliveredCount = 0
   let failedCount = 0
@@ -144,7 +141,7 @@ export function createWebhookSender(config: WebhookSenderConfig = {}): WebhookSe
   function stats(): SenderStats {
     return {
       subscribers: subscribers.size,
-      pending: queue.size(),
+      pending: 0,
       delivered: deliveredCount,
       failed: failedCount,
       dlqSize: dlq.size(),

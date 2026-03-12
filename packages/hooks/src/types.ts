@@ -3,7 +3,6 @@
 export interface WebhookSenderConfig {
   retry?: { maxAttempts?: number }
   timeout?: number
-  queue?: QueueAdapter
   onDelivery?: (delivery: WebhookDelivery) => void
   onFailure?: (entry: DlqEntry) => void
 }
