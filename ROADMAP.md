@@ -107,18 +107,18 @@
 ## v0.4 — @arrivd/cron
 
 ### Job Wrapper
-- `monitor(name, fn, options)` — wraps any async function with auto-reporting
-- Reports start, end, fail, and duration to `@arrivd/core` reporter
-- Captures error details on failure
+- ✅ `monitor(name, fn, options)` — wraps any async function with auto-reporting
+- ✅ Reports start, end, fail, and duration to `@arrivd/core` reporter
+- ✅ Captures error details on failure
 
 ### Dead Man's Switch
-- Expected schedule declaration (cron expression)
-- Alert if job doesn't check in within the expected window
-- Configurable grace period
+- ✅ Expected schedule declaration (cron expression)
+- ✅ Alert if job doesn't check in within the expected window
+- ✅ Configurable grace period
 
 ### Timeout Detection
-- `timeout: '30m'` — alert if job exceeds expected duration
-- Kill support (optional — terminate long-running jobs)
+- ✅ `timeout: '30m'` — alert if job exceeds expected duration
+- Kill support (optional — terminate long-running jobs, requires AbortController)
 
 ### Framework Adapters
 - Vercel Cron adapter (wraps `export default` handler)
