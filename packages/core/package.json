@@ -1,6 +1,6 @@
 {
   "name": "@arrivd/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared types, config, and reporting for arrivd deliverability modules",
   "type": "module",
   "sideEffects": false,

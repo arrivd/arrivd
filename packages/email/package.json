@@ -1,6 +1,6 @@
 {
   "name": "@arrivd/email",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Email deliverability audit — SPF, DKIM, DMARC, BIMI, MTA-STS checks in one command",
   "type": "module",
   "sideEffects": false,
