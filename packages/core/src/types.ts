@@ -65,5 +65,4 @@ export interface MonitorOptions {
   channel: Channel
   schedule?: string
   timeout?: string
-  alertOnMiss?: boolean
 }

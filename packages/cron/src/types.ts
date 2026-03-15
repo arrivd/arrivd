@@ -6,7 +6,6 @@ export interface CronJobConfig {
   name: string
   schedule?: string
   timeout?: string
-  alertOnMiss?: boolean
   gracePeriod?: string
   reporter?: Reporter
   alerts?: AlertConfig
