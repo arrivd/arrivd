@@ -50,8 +50,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/arrivd-dev/arrivd.git",
+    "url": "https://github.com/arrivd/arrivd.git",
     "directory": "packages/core"
   },
-  "bugs": "https://github.com/arrivd-dev/arrivd/issues"
+  "bugs": "https://github.com/arrivd/arrivd/issues"
 }

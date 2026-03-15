@@ -1,14 +1,10 @@
 # @arrivd/hooks
 
-Outgoing webhook delivery with retry, signing, and dead letter queue.
-
-## Install
+Delivers webhooks with retry, signing, and dead letter queue.
 
 ```bash
 npm install @arrivd/hooks
 ```
-
-## Quick Start
 
 ```typescript
 import { createWebhookSender } from '@arrivd/hooks'
@@ -20,14 +16,12 @@ const sender = createWebhookSender({
   onFailure: (entry) => console.error('Failed:', entry.error),
 })
 
-// Register endpoints — secrets are per-subscriber
-const sub = sender.subscribe('https://example.com/hook', {
+sender.subscribe('https://example.com/hook', {
   secret: 'whsec_abc123',
   events: ['user.created', 'user.deleted'],
 })
 
-// Send fans out to all subscribers matching the event
-const deliveries = await sender.send({
+await sender.send({
   event: 'user.created',
   data: { id: 'usr_123', email: 'alice@example.com' },
 })
@@ -36,24 +30,20 @@ const deliveries = await sender.send({
 ## Subscriber Management
 
 ```typescript
-// Subscribe — returns subscriber with generated ID
 const sub = sender.subscribe('https://example.com/hook', {
   secret: 'whsec_abc123',
-  events: ['user.created'],  // omit to receive all events
+  events: ['user.created'], // omit to receive all events
 })
 
-// Unsubscribe
 sender.unsubscribe(sub.id)
 ```
 
 ## Dead Letter Queue
 
-Failed deliveries (after all retries exhausted) are moved to the DLQ.
-
 ```typescript
-sender.dlq.list()           // list all failed deliveries
-sender.dlq.retry('dlq_id')  // re-enters full retry cycle
-sender.dlq.purge()          // clear all entries
+sender.dlq.list()          // all failed deliveries
+sender.dlq.retry('dlq_id') // re-enters full retry cycle
+sender.dlq.purge()         // clear all
 ```
 
 ## Stats
@@ -65,63 +55,28 @@ sender.stats()
 
 ## Building Blocks
 
-Individual modules are exported for advanced use:
-
 ```typescript
 import { signPayload, verifyPayload, buildSignatureHeaders } from '@arrivd/hooks'
 import { calculateBackoff } from '@arrivd/hooks'
-import { MemoryQueue } from '@arrivd/hooks'
-import { DeadLetterQueue } from '@arrivd/hooks'
-```
+import { MemoryQueue, DeadLetterQueue } from '@arrivd/hooks'
 
-### Signing
-
-```typescript
-// Sign a payload
 const signature = await signPayload('{"event":"test"}', 'secret')
 // => 'sha256=abc123...'
 
-// Verify incoming webhook
 const valid = await verifyPayload(body, secret, req.headers['x-webhook-signature'])
 
-// Build headers for outgoing request
 const headers = await buildSignatureHeaders(body, secret)
-// => { 'x-webhook-signature': 'sha256=...', 'x-webhook-timestamp': '1234567890' }
+// => { 'x-webhook-signature': 'sha256=...', 'x-webhook-timestamp': '...' }
 ```
 
 ## Features
 
-### Webhook Delivery
-
-- HMAC-SHA256 payload signing with timing-safe verification
-- Signature and timestamp headers on every request
+- HMAC-SHA256 signing with timing-safe verification
+- Exponential backoff with multiplicative jitter (1s, 2s, 4s, 8s, 16s base x 0.5-1.5)
+- 10s fetch timeout on all deliveries
 - Fan-out to multiple subscribers per event
-- Event filtering per subscriber
-
-### Retry
-
-- Exponential backoff with multiplicative jitter (1s, 2s, 4s, 8s, 16s base × 0.5–1.5)
-- Configurable max retry attempts (default: 5)
-- 10s fetch timeout with `AbortSignal`
-
-### Dead Letter Queue
-
-- Failed deliveries moved to DLQ after max retries (max 1000 entries, FIFO eviction)
-- Retry re-enters the full retry cycle
-- List, retry, and purge operations
-- `onFailure` callback for alerting
-
-### Queue Adapters
-
-- In-memory queue (default)
-- Custom queue interface (`QueueAdapter`) for future adapters
-
-## Coming Soon
-
-- Redis and BullMQ queue adapters
-- URL ownership verification (challenge/response)
-- Per-subscriber delivery stats
-- Framework middleware (Express, Next.js, Hono)
+- DLQ after max retries — max 1000 entries, FIFO eviction
+- In-memory queue default, custom `QueueAdapter` interface for others
 
 ## License
 
