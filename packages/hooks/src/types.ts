@@ -69,23 +69,6 @@ export interface SenderStats {
   dlqSize: number
 }
 
-// ── Queue ──
-
-export interface DeliveryJob {
-  id: string
-  subscriberId: string
-  endpoint: string
-  event: WebhookEvent
-  secret: string
-  attempt: number
-}
-
-export interface QueueAdapter {
-  enqueue(job: DeliveryJob): void
-  dequeue(): DeliveryJob | null
-  size(): number
-}
-
 // ── Sender ──
 
 export interface WebhookSender {
