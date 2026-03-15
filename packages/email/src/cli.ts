@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   }
 
   if (command === '--version' || command === '-v') {
-    console.log('arrivd 0.1.0')
+    console.log('arrivd 0.1.1')
     process.exit(0)
   }
 
